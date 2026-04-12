@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuantConnect Python"
+  short_description: "Build QuantConnect LEAN algorithms in Python"
+  default_prompt: "Use $quant-connect to implement a QCAlgorithm strategy in Python."

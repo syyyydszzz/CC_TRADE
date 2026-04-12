@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "NotebookEdit",
+      "WebFetch",
+      "WebSearch",
+      "Task",
+      "Skill",
+      "mcp__*",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
+    ]
+  },
+  "model": "opus",
+  "alwaysThinkingEnabled": true,
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ],
+  "enabledPlugins": {
+    "achieve@claude-achieve-plugin": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-achieve-plugin": {
+      "source": {
+        "source": "directory",
+        "path": "./claude-achieve-plugin-main"
+      }
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/scripts/auto-install-plugins.sh",
+            "once": true
+          }
+        ]
+      }
+    ]
+  }
+}

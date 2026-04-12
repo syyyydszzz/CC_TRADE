@@ -1,0 +1,10 @@
+{
+  "sessionsFolder": "./sessions",
+  "framework": "buildforce",
+  "aiAssistants": [
+    "claude"
+  ],
+  "scriptType": "sh",
+  "version": "v0.0.42",
+  "currentSession": null
+}

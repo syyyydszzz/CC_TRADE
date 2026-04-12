@@ -1,0 +1,44 @@
+schema_version: 1
+strategy_id: "<strategy-id>"
+status: "not_run" # not_run | passed | failed | blocked | needs_iteration
+latest_stage: null # null | compile | backtest | optimization | validation
+latest_run_id: null
+last_validated_at: null
+
+latest_compile:
+  status: "not_run"
+  compile_id: null
+  artifact: null
+  summary: {}
+
+latest_backtest:
+  status: "not_run"
+  backtest_id: null
+  artifact: null
+  summary: {}
+
+latest_optimization:
+  status: "not_run"
+  optimization_id: null
+  artifact: null
+  summary: {}
+
+latest_validation:
+  status: "not_run"
+  validation_id: null
+  artifact: null
+  summary: {}
+
+decision:
+  value: "not_run"
+  reason: "No execution results have been written yet."
+
+next_actions:
+  - "Run compile through qc-mcp."
+  - "If compile succeeds, archive raw outputs before updating state and report."
+
+refs:
+  spec: null
+  report: "results/report.md"
+  buildforce_session: null
+  achieve_session: null

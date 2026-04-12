@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-achieve-plugin",
+  "version": "1.0.0",
+  "description": "Goal-driven iterative development plugin for Claude Code",
+  "owner": {
+    "name": "Todor Kolev"
+  },
+  "plugins": [
+    {
+      "name": "achieve",
+      "description": "Goal-driven iterative development with multi-session support. Achieve complex goals through buildforce phases with automatic iteration until success.",
+      "version": "1.0.2",
+      "author": {
+        "name": "Todor Kolev"
+      },
+      "source": "./plugins/achieve",
+      "category": "productivity"
+    }
+  ]
+}

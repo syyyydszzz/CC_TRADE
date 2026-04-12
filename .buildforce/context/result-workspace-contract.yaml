@@ -1,0 +1,82 @@
+id: result-workspace-contract
+name: Strategy Result Workspace Contract
+type: pattern
+status: production
+created: "2026-04-12"
+last_updated: "2026-04-12"
+
+summary: |
+  Defines the canonical local result persistence contract for strategies under algorithms/.
+  Result data is split into a machine-readable state file, a concise report, and per-run
+  artifact archives. This contract keeps result persistence local to the strategy workspace
+  and separate from Achieve runtime state and BuildForce session artifacts.
+
+responsibilities:
+  - Define the `results/` workspace structure for each strategy
+  - Define file responsibilities for `state.yaml`, `report.md`, and `artifacts/runs/{run_id}/`
+  - Define a legal pre-run state before any compile or backtest has executed
+  - Define the preferred read order for humans and LLMs
+  - Define the preferred write order after qc-mcp execution
+  - Preserve separation between result state, Achieve runtime state, and BuildForce artifact state
+
+dependencies:
+  internal:
+    - algorithms: "Each strategy stores its local result workspace under algorithms/{strategy}/results/"
+    - qc-mcp: "Compile, backtest, optimization, and validation outputs are archived per run"
+    - buildforce: "BuildForce sessions may be referenced from result state, but do not own it"
+    - achieve: "Achieve sessions may be referenced from result state, but do not own it"
+
+files:
+  primary:
+    - .buildforce/templates/result-state-template.yaml
+    - .buildforce/templates/result-report-template.md
+    - .buildforce/templates/result-run-template.yaml
+    - .buildforce/templates/result-analysis-template.md
+  secondary:
+    - README.md
+    - CLAUDE.md
+    - docs/qc-mcp-integration.md
+    - .claude/skills/strategy-writer/SKILL.md
+    - .claude/commands/buildforce.plan.md
+    - .claude/commands/buildforce.build.md
+
+design_decisions:
+  - decision: "Use YAML for authoritative result state and run summaries"
+    rationale: "Matches the existing Achieve and BuildForce state/artifact style and is easy for agents to inspect and update."
+  - decision: "Use Markdown for the concise current result report"
+    rationale: "Keeps the current verdict readable for both humans and LLMs without mixing in raw machine output."
+  - decision: "Use per-run JSON artifacts under results/artifacts/runs/{run_id}/"
+    rationale: "Preserves raw qc-mcp outputs without flattening or overwriting history."
+  - decision: "Keep Achieve and BuildForce as referenced workflow layers, not result-state owners"
+    rationale: "Avoids authority conflicts and duplicated state across runtime, artifact, and result layers."
+  - decision: "Allow a legal pre-run result state with null latest run metadata"
+    rationale: "Strategies need a stable result workspace before the first compile, backtest, or validation run exists."
+
+notes: |
+  Reference conventions:
+  - `refs.report` is a strategy-relative path.
+  - `refs.spec` is a strategy-relative path when a local spec exists, otherwise `null`.
+  - Artifact paths under `latest_*` and `run.yaml` are strategy-relative paths.
+  - `refs.buildforce_session` and `refs.achieve_session` are opaque workflow references, not file authorities.
+
+  Legal pre-run state:
+  - `latest_stage: null`
+  - `latest_run_id: null`
+  - `last_validated_at: null`
+  - each `latest_*` section has `status: not_run`, null ids, null artifact, and empty summary
+
+  Preferred read order:
+  1. spec.md
+  2. results/state.yaml
+  3. results/report.md
+  4. latest results/artifacts/runs/{run_id}/run.yaml
+  5. raw *.json only when needed
+
+  Preferred write order:
+  1. raw artifacts under results/artifacts/runs/{run_id}/
+  2. results/state.yaml
+  3. results/report.md
+
+  Recommended helper commands:
+  - `bash .buildforce/scripts/bash/init-result-workspace.sh --strategy-path algorithms/{strategy}`
+  - `bash .buildforce/scripts/bash/check-result-workspace.sh --strategy-path algorithms/{strategy}`
