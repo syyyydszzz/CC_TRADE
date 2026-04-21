@@ -1,120 +1,154 @@
-# QC MCP Strategy Workspace
+# QC Strategy Template Repo
 
-> Claude Code workflow layer for QuantConnect strategy development: local source in `algorithms/`, orchestration through Achieve + BuildForce, execution only through `qc-mcp`.
+用 AI 辅助开发 QuantConnect 量化交易策略的工程化框架。本 repo 是脚手架生成器，不是某个具体策略的家。
 
-## Architecture
+## 快速开始
 
-- `algorithms/` is the source-of-truth workspace for strategy code and local docs.
-- `Achieve` provides the goal loop and stop-hook driven continuation.
-- `BuildForce` provides spec, research, and plan artifacts under `.buildforce/`.
-- `qc-mcp` is the only execution layer for compile, backtest, optimization, and live or paper deployment.
+在 Claude Code 里直接用自然语言描述策略意图：
 
-This repository no longer ships `lp`, a local Lean runtime, QuantBook notebooks, data download helpers, or any fallback execution path.
-
-## What Stays
-
-- Claude Code project configuration in `.claude/`
-- `/achieve:*` plugin workflow
-- `/buildforce.*` command workflow
-- `.buildforce/` session and artifact structure
-- Local strategy projects under `algorithms/`
-
-## What Changed
-
-- All compile, backtest, optimization, and live validation must go through `qc-mcp`.
-- Local file edits still happen in this repository.
-- Verification now means: edit locally, run `qc-mcp`, then write conclusions back into local docs or BuildForce artifacts.
-- If `qc-mcp` is unavailable, the workflow stops. There is no local fallback.
-
-## Getting Started
-
-### 1. Connect Claude Code to `qc-mcp`
-
-QuantConnect's official Claude Code setup uses `~/.claude.json` with:
-
-```json
-{
-  "mcpServers": {
-    "qc-mcp": {
-      "type": "http",
-      "url": "http://localhost:3001/"
-    }
-  }
-}
+```
+/strategy.init 做一个 QQQ 的动量策略，日线级别
+/strategy.init NVDA 趋势跟踪，周线，保守风控
+/strategy.init 多标的轮动策略，SPY/QQQ/IWM，月度再平衡
 ```
 
-Use the project examples in [docs/qc-mcp-integration.md](/Users/suyongyuan/Downloads/lean-playground-main/docs/qc-mcp-integration.md):
-
-- [docs/qc-mcp-claude-config.example.json](/Users/suyongyuan/Downloads/lean-playground-main/docs/qc-mcp-claude-config.example.json) for host-native Claude Code
-- [docs/qc-mcp-claude-config.devcontainer.example.json](/Users/suyongyuan/Downloads/lean-playground-main/docs/qc-mcp-claude-config.devcontainer.example.json) for Claude Code running inside the devcontainer
-
-### 2. Open the matching QuantConnect project
-
-`qc-mcp` operates on the project currently open in QuantConnect Local Platform. Before asking Claude to compile or backtest, make sure the open project is the one that matches the local strategy you are editing.
-
-### 3. Work locally in `algorithms/`
-
-Create or update a strategy folder such as:
-
-```text
-algorithms/my_strategy/
-  main.py
-  spec.md
-  results/
-    state.yaml
-    report.md
-    artifacts/
-      runs/
-        {run_id}/
-          run.yaml
-          compile.json
-          backtest.json
-```
-
-The repository keeps the editable source locally. `qc-mcp` is only used to execute and read results.
-
-Before the first compile or backtest for a strategy workspace, initialize the result layer with:
+或者用脚本直接生成（`--asset` 默认 SPY，`--resolution` 支持 daily / hourly / minute）：
 
 ```bash
-bash .buildforce/scripts/bash/init-result-workspace.sh --strategy-path algorithms/{name}
+bash scripts/new-strategy-repo.sh \
+  --project-name my-strategy-v1 \
+  --target-dir ~/strategy-repos \
+  --asset QQQ \
+  --resolution daily
 ```
 
-## Recommended Workflow
+## 生成的仓库结构
 
-1. Create or refine a strategy in `algorithms/{name}/main.py`.
-2. Initialize the strategy result workspace if `results/` does not exist yet.
-3. Use `/achieve:goal` for goal-driven iteration, or `/buildforce.plan` and `/buildforce.build` for artifact-driven execution.
-4. Ask Claude to confirm the QuantConnect context with `read_open_project`.
-5. Run `create_compile` and resolve every compile error or warning.
-6. Run `create_backtest` and `read_backtest` to evaluate the strategy.
-7. If the goal requires tuning, run `create_optimization` and `read_optimization`.
-8. Persist raw execution outputs under `results/artifacts/runs/{run_id}/`, update `results/state.yaml`, then refresh `results/report.md`.
-9. Run `bash .buildforce/scripts/bash/check-result-workspace.sh --strategy-path algorithms/{name}` as a contract self-check.
-
-## Result Workspace Contract
-
-- `results/state.yaml` is the authoritative machine-readable result state for the strategy.
-- `results/report.md` is the concise human and LLM-facing summary of the current verdict.
-- `results/artifacts/runs/{run_id}/` stores raw `qc-mcp` outputs, `run.yaml`, and any longer-form analysis.
-- Canonical result workspace templates live under `.buildforce/templates/`.
-- Canonical project-level guidance for this contract lives under `.buildforce/context/result-workspace-contract.yaml`.
-- Preferred read order: `spec.md` -> `results/state.yaml` -> `results/report.md` -> latest `run.yaml` -> raw `*.json` only when needed.
-- Preferred write order: raw artifacts first, then `results/state.yaml`, then `results/report.md`.
-- Helper commands:
-  - `bash .buildforce/scripts/bash/init-result-workspace.sh --strategy-path algorithms/{name}`
-  - `bash .buildforce/scripts/bash/check-result-workspace.sh --strategy-path algorithms/{name}`
-
-## Repository Layout
-
-```text
-.buildforce/                      # BuildForce workflow state, templates, and sessions
-.claude/                          # Claude Code commands, skills, and project settings
-algorithms/                       # Local strategy source-of-truth
-docs/                             # qc-mcp contract and config templates
+```
+main.py          # 策略源码（唯一真相）
+spec.md          # 策略规格说明
+results/         # 回测结果层
+openspec/        # 变更管理工作流
+.claude/         # Claude 技能和命令
+scripts/         # 工具脚本
 ```
 
-## Notes
+## 策略迭代工作流
 
-- `.mcp.json` remains reserved for project-local shared MCP servers such as `context7`.
-- The official `qc-mcp` connection is user-scoped and documented by QuantConnect for `~/.claude.json`.
-- The sample strategy source remains in [algorithms/sample_sma_crossover/main.py](/Users/suyongyuan/Downloads/lean-playground-main/algorithms/sample_sma_crossover/main.py).
+### 完整流程
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PHASE 0: 探索                                                  │
+│                                                                 │
+│  触发: /opsx.explore                                            │
+│  ├── 读 AGENTS.md, openspec/specs/, spec.md, results/           │
+│  └── 输出: 范围摘要 / 关键文件 / 前置条件 / 开放问题 (纯对话)   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  PHASE 1: 提案                                                  │
+│                                                                 │
+│  触发: /opsx.propose <change-id>                                │
+│  └── 产出 openspec/changes/{change}/                            │
+│      ├── proposal.md                                            │
+│      ├── specs/strategy-project/spec.md                         │
+│      ├── research.md                                            │
+│      ├── design.md                                              │
+│      └── tasks.md                                               │
+│                                                                 │
+│  可选预检: /opsx.review <change-id>                             │
+│  └── 召唤 review-pre subagent → READY / NOT_READY              │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  PHASE 2: 执行                                                  │
+│                                                                 │
+│  触发: /opsx.apply <change-id>                                  │
+│  │                                                              │
+│  │  [自动] SUBAGENT 1: qc-implementer                          │
+│  │  ├── 读 tasks.md / specs / design.md                        │
+│  │  ├── 写 main.py + spec.md                                   │
+│  │  └── 追加 execution-log.md                                  │
+│  │              ↓ GATE (BLOCKED → 停止)                        │
+│  │  [自动] SUBAGENT 2: qc-executor                             │
+│  │  ├── qc-mcp: compile → backtest                             │
+│  │  └── 写 results/: compile.json → backtest.json              │
+│  │      → run.yaml → state.yaml → report.md                    │
+│  │              ↓ GATE (BLOCKED → 停止)                        │
+│  │  [自动] SUBAGENT 3: review-result  ← 冷读，无上下文传递     │
+│  │  ├── 读 proposal.md / report.md / state.yaml / main.py      │
+│  │  └── 输出: APPROVE / REVISE / BLOCKED                       │
+│                                                                 │
+│  也可单独触发: /opsx.review-result <change-id> [run-id]        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓ APPROVE
+┌─────────────────────────────────────────────────────────────────┐
+│  PHASE 3: 验证                                                  │
+│                                                                 │
+│  触发: /opsx.verify <change-id>                                 │
+│  ├── opsx.sh validate + check-result-workspace.sh               │
+│  └── 逐条核对 proposal.md success criteria                      │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  PHASE 4: 归档                                                  │
+│                                                                 │
+│  触发: /opsx.archive <change-id>                                │
+│  ├── delta specs 合并入 openspec/specs/                         │
+│  └── change 目录移至 openspec/changes/archive/                  │
+│                                                                 │
+│  可选复盘: /reflect <change-id>                                 │
+│  └── 召唤 opsx-reflector → 写经验到 skill knowledge            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 命令速查
+
+| 命令 | 阶段 | 产出文件 |
+|------|------|----------|
+| `/opsx.explore` | 探索 | 无（纯对话） |
+| `/opsx.propose <id>` | 提案 | openspec/changes/{id}/ |
+| `/opsx.review <id>` | 提案预检（可选） | 无 |
+| `/opsx.apply <id>` | 执行（编排 3 个 subagent） | main.py + results/ |
+| `/opsx.review-result <id>` | 结果独立评审（可单独触发） | 无 |
+| `/opsx.verify <id>` | 验证 | 无 |
+| `/opsx.archive <id>` | 归档 | openspec/changes/archive/ |
+| `/reflect <id>` | 复盘（可选） | skill knowledge 文件 |
+
+> 提示：可以在 `/opsx.explore` 之前用 Claude Code 的 Plan 模式做更高层的策略方向讨论，对齐思路后再进入工作流。
+
+QC 同步：
+
+```
+/qc.sync-status  # 检查本地与 QC 云端是否同步
+/qc.sync         # 推送代码到 QC 云端
+```
+
+## 环境依赖
+
+| 组件 | 说明 |
+|------|------|
+| `qc-mcp` | QuantConnect MCP 服务，运行在 `localhost:3001`，配置在 `~/.claude.json` |
+| `context7` | 文档查询 MCP，通过 `npx` 按需启动 |
+| `chrome-devtools` | 浏览器调试 MCP，配置在 `~/.claude.json` |
+| Python venv | `.venv/`，Python 3.9，含 numpy 等基础依赖 |
+
+启动前检查：
+
+```bash
+bash scripts/check-qc-mcp.sh
+```
+
+## 目录说明
+
+```
+template/single-strategy-repo/   # 单策略仓库骨架
+scripts/new-strategy-repo.sh     # 脚手架生成脚本
+openspec/                        # OpenSpec 变更管理合约
+workflow/                        # 结果层合约模板
+.claude/                         # Claude 命令、技能、Agent 定义
+examples/strategies/             # 示例策略（仅供参考）
+docs/                            # qc-mcp 集成文档
+external/                        # 外部技能包
+```
