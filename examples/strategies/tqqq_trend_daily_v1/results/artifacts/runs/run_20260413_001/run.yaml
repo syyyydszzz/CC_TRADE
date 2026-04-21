@@ -1,0 +1,55 @@
+run_id: run_20260413_001
+created_at: '2026-04-13T12:30:00Z'
+stage_sequence:
+- read_open_project
+- compile
+- backtest
+open_project: tqqq_trend_daily_v1
+local_strategy_path: algorithms/tqqq_trend_daily_v1
+parameters: {}
+compile:
+  status: passed
+  compile_id: 38cb424937f274e1a069d0bf029d7b8f-844c01aee8550f36a2288ad8fad557fa
+  artifact: results/artifacts/runs/run_20260413_001/compile.json
+  summary:
+    warnings: []
+backtest:
+  status: passed
+  backtest_id: f5070f6c662f9fa6d7822e8dde77dc28
+  artifact: results/artifacts/runs/run_20260413_001/backtest.json
+  summary:
+    name: tqqq_trend_daily_v1_run01
+    status: Completed.
+    sharpe_ratio: 0.806
+    sortino_ratio: 0.734
+    drawdown: 51.8
+    net_profit: 812.288
+    compounding_annual_return: 37.111
+    win_rate: 41.0
+    profit_loss_ratio: 13.03
+    expectancy: 4.777
+    average_win: 53.7
+    average_loss: -4.12
+    total_orders: 35
+    start_equity: 100000
+    end_equity: 912287.58
+    runtime_return_pct: 812.29
+    fees: -3380.63
+    runtime_net_profit: 599523.25
+    runtime_probabilistic_sharpe_ratio: 21.729
+optimization:
+  status: not_run
+  optimization_id: null
+  artifact: null
+  summary: {}
+validation:
+  status: not_run
+  validation_id: null
+  artifact: null
+  summary: {}
+decision:
+  value: continue
+  reason: 'Backtest completed: CAR 37.1%, Sharpe 0.806, Net Profit 812%, Turnover
+    1.35%'
+notes: First backtest. Dual SMA(200) TQQQ+SPY filter. 35 trades over 7 years. Very
+  low turnover confirmed.

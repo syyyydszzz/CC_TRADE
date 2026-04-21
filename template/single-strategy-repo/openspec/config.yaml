@@ -1,0 +1,36 @@
+schema: qc-change
+context: |
+  QC MCP strategy workspace.
+
+  Repository contracts:
+  - main.py and spec.md at the repo root are the source of truth for the strategy.
+  - qc-mcp is the only execution path for compile, backtest, optimization, and validation.
+  - results/ is the only execution evidence layer.
+  - OpenSpec changes are the only planning/workflow authority.
+
+  Result write order:
+  1. Persist raw artifacts under results/artifacts/runs/{run_id}/
+  2. Generate run.yaml with bash scripts/record-result-run.sh
+  3. Generate results/state.yaml with bash scripts/record-result-state.sh
+  4. Refresh results/report.md
+  5. Run bash scripts/check-result-workspace.sh
+rules:
+  proposal:
+    - Include the CLI-compatible sections `Why`, `What Changes`, `Capabilities`, and `Impact` before repo-specific sections.
+    - Identify the target repo subsystem explicitly and tie it back to the single strategy when relevant.
+    - Capture in-scope work, out-of-scope work, blockers, and measurable success criteria.
+    - Use Capabilities to declare which change specs under `specs/<capability>/spec.md` will be created or modified.
+  specs:
+    - Strategy behavior changes default to `specs/strategy-project/spec.md`.
+    - Changes to execution or result contracts also use `specs/qc-execution/spec.md` and/or `specs/result-workspace/spec.md`.
+    - Use delta headings plus `### Requirement:` and `#### Scenario:` syntax that passes `openspec validate <change>`.
+  research:
+    - Read the relevant repository docs, current strategy files, current change specs, and OpenSpec long-lived specs first.
+    - Document qc-mcp prerequisites, result-layer constraints, key files, and blockers.
+  design:
+    - Split implementation into design, local code changes, QC execution, result persistence, independent review, and validation.
+    - Keep execution and final closure as separate steps.
+  tasks:
+    - Write task checklists grouped by the six workflow stages above.
+    - Keep tasks outcome-based; avoid fragile symbol names that can drift during compile/backtest fixes.
+    - Include explicit QC gates and result helper calls when the change touches main.py, spec.md, or results/.

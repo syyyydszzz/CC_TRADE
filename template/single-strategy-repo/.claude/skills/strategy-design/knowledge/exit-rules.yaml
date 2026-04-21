@@ -1,0 +1,11 @@
+# Exit Rules Knowledge
+# Patterns for exit timing and rules
+
+id: exit-rules
+name: Exit Rules Patterns
+last_updated: "2026-04-12"
+description: "Patterns for determining when and how to exit positions"
+
+entries:
+  # This file starts empty - entries will be added through /evolve
+  # as the strategy-design skill gains experience

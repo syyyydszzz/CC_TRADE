@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "qc-mcp": {
+      "type": "http",
+      "url": "http://host.docker.internal:3001/"
+    }
+  }
+}

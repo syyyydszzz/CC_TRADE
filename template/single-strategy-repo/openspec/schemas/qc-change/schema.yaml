@@ -1,0 +1,94 @@
+name: qc-change
+version: 1
+description: >
+  Repo-specific change schema for QuantConnect strategy development, qc-mcp execution,
+  and result-workspace persistence with OpenSpec as the only planning authority.
+artifacts:
+  - id: proposal
+    description: Why this change exists, what it touches, and how success is measured.
+    generates: proposal.md
+    template: proposal.md
+    instruction: |
+      Create a CLI-compatible proposal document for this change.
+
+      Required sections:
+      - **Why**
+      - **What Changes**
+      - **Capabilities**
+      - **Impact**
+      - **Target**
+      - **Scope**
+      - **Success Criteria**
+      - **Risks Or Blockers**
+
+      The Capabilities section must identify which change specs will be created or updated
+      under `openspec/changes/{change}/specs/`.
+  - id: research
+    description: Codebase findings, qc-mcp prerequisites, result-layer contract, and blockers.
+    generates: research.md
+    template: research.md
+    requires:
+      - proposal
+      - specs
+  - id: specs
+    description: Change-specific delta specs that keep qc-change compatible with the OpenSpec CLI.
+    generates: "specs/**/*.md"
+    template: spec.md
+    requires:
+      - proposal
+    instruction: |
+      Create one change spec per capability listed in proposal.md.
+
+      Defaults for this repository:
+      - Strategy behavior changes use `specs/strategy-project/spec.md`
+      - Execution contract changes also touch `specs/qc-execution/spec.md`
+      - Result-layer contract changes also touch `specs/result-workspace/spec.md`
+
+      Each change spec must use OpenSpec delta syntax:
+      - `## ADDED Requirements`
+      - `## MODIFIED Requirements`
+      - `## REMOVED Requirements`
+      - `## RENAMED Requirements`
+
+      Every requirement must use `### Requirement:` and include at least one
+      `#### Scenario:` block so `openspec validate <change>` passes cleanly.
+  - id: design
+    description: Technical approach, phase handoffs, risk controls, and validation design.
+    generates: design.md
+    template: design.md
+    requires:
+      - proposal
+      - specs
+      - research
+  - id: tasks
+    description: Executable checklist grouped by design, implementation, execution, persistence, review, and validation.
+    generates: tasks.md
+    template: tasks.md
+    requires:
+      - proposal
+      - specs
+      - research
+      - design
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Implement the approved change against this repository's execution contract.
+
+    Hard rules:
+    - `main.py` and `spec.md` at the repo root are the source of truth for the strategy.
+    - `qc-mcp` is the only execution path for compile, backtest, optimization, and validation.
+    - Confirm the open QuantConnect project with `read_open_project` before compile or backtest.
+    - If the open project does not match the target strategy, stop and report the blocker.
+    - Update `tasks.md` when implementation details change materially during compile/backtest fixes.
+    - Write raw artifacts under `results/artifacts/runs/{run_id}/` before generating summaries.
+    - Persist compile evidence as `results/artifacts/runs/{run_id}/compile.json` before any backtest run is recorded.
+    - Persist backtest evidence as `results/artifacts/runs/{run_id}/backtest.json` before any run or state summary is generated.
+    - Generate `run.yaml` only through `bash scripts/record-result-run.sh ...`.
+    - Generate `results/state.yaml` only through `bash scripts/record-result-state.sh ...`.
+    - `record-result-run.sh` must include `--stage compile` before `--stage backtest` when a backtest is executed.
+    - Result-layer status values are limited to `not_run`, `passed`, `failed`, `blocked`, and `needs_iteration`.
+    - Refresh `results/report.md` only after raw artifacts and machine-readable files exist.
+    - Run `bash scripts/check-result-workspace.sh` after result updates.
+    - Do not create planning artifacts outside `openspec/changes/{change}/`.

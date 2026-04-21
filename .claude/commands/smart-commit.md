@@ -60,7 +60,7 @@ Analyze staged git changes and commit them properly, splitting into multiple foc
 6. **Commit message guidelines**:
    - Use conventional commit format: `type: description` (no scope for single-project repos)
    - Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `style`, `build`, `ci`, `spec`
-   - Use `spec` for specification and planning artifacts (e.g., buildforce sessions with spec.yaml, research.yaml, plan.yaml)
+   - Use `spec` for specification and planning artifacts (e.g., OpenSpec change artifacts)
    - Keep the first line under 72 characters
    - Add bullet points in body for multiple related changes
    - Focus on "why" rather than "what"
@@ -98,12 +98,13 @@ Commit 3: "chore: update linter configuration"
   - pyproject.toml
 ```
 
-**Example 3**: Buildforce session
+**Example 3**: OpenSpec change artifacts
 ```
 Commit 1: "spec: microstructure alpha pipeline"
-  - .buildforce/sessions/*/spec.yaml
-  - .buildforce/sessions/*/research.yaml
-  - .buildforce/sessions/*/plan.yaml
+  - openspec/changes/*/proposal.md
+  - openspec/changes/*/research.md
+  - openspec/changes/*/design.md
+  - openspec/changes/*/tasks.md
 ```
 
 ## Split Commit Flow (with unstaged changes protection)

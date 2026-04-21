@@ -1,0 +1,17 @@
+{
+  "name": "qc-mcp-strategy-workspace",
+  "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "devDependencies": {
+    "@fission-ai/openspec": "~1.3.0"
+  },
+  "scripts": {
+    "bootstrap:openspec": "bash scripts/bootstrap-openspec.sh",
+    "openspec": "bash scripts/opsx.sh",
+    "openspec:list": "bash scripts/opsx.sh list --specs",
+    "openspec:status": "bash scripts/opsx.sh status --json",
+    "openspec:update": "bash scripts/opsx.sh update"
+  }
+}

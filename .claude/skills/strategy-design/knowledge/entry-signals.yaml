@@ -1,0 +1,11 @@
+# Entry Signals Knowledge
+# Patterns for identifying good entry points
+
+id: entry-signals
+name: Entry Signal Patterns
+last_updated: "2026-04-12"
+description: "Patterns for identifying good entry points in trading strategies"
+
+entries:
+  # This file starts empty - entries will be added through /evolve
+  # as the strategy-design skill gains experience

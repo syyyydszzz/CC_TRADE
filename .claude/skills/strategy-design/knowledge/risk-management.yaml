@@ -1,0 +1,11 @@
+# Risk Management Knowledge
+# Position sizing, stops, and risk control patterns
+
+id: risk-management
+name: Risk Management Patterns
+last_updated: "2026-04-12"
+description: "Patterns for position sizing, stop losses, and overall risk control"
+
+entries:
+  # This file starts empty - entries will be added through /evolve
+  # as the strategy-design skill gains experience

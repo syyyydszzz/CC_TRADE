@@ -1,0 +1,42 @@
+run_id: "<run-id>"
+created_at: "<ISO-8601 timestamp>"
+stage_sequence:
+  - "read_open_project"
+  - "compile"
+  - "backtest"
+
+open_project: "<qc-open-project>"
+local_strategy_path: "."
+
+parameters: {}
+
+compile:
+  status: "not_run"
+  compile_id: null
+  artifact: "results/artifacts/runs/<run-id>/compile.json"
+  summary: {}
+
+backtest:
+  status: "not_run"
+  backtest_id: null
+  artifact: "results/artifacts/runs/<run-id>/backtest.json"
+  summary: {}
+
+optimization:
+  status: "not_run"
+  optimization_id: null
+  artifact: "results/artifacts/runs/<run-id>/optimization.json"
+  summary: {}
+
+validation:
+  status: "not_run"
+  validation_id: null
+  artifact: "results/artifacts/runs/<run-id>/validation.json"
+  summary: {}
+
+decision:
+  value: "not_run"
+  reason: "<run-level decision>"
+
+notes: |
+  <free-form notes for this run>

@@ -1,0 +1,65 @@
+id: result-workspace-contract
+name: Strategy Result Workspace Contract
+type: pattern
+status: production
+created: "2026-04-14"
+last_updated: "2026-04-14"
+
+summary: |
+  Defines the canonical local result persistence contract for a single-strategy repository.
+  Result data is split into a machine-readable state file, a concise report, and per-run
+  artifact archives. This contract keeps result persistence local to the strategy workspace
+  and separate from OpenSpec change artifacts and any optional runtime loop state.
+
+responsibilities:
+  - Define the `results/` workspace structure for the repository's single strategy
+  - Define file responsibilities for `state.yaml`, `report.md`, and `artifacts/runs/{run_id}/`
+  - Define the preferred read and write order after qc-mcp execution
+  - Preserve separation between result state, OpenSpec planning, and optional runtime loop state
+
+dependencies:
+  internal:
+    - source-files: "The repo root keeps main.py, spec.md, and results/ for the single strategy"
+    - qc-mcp: "Compile, backtest, optimization, and validation outputs are archived per run"
+    - openspec: "OpenSpec changes may be referenced from result state, but do not own it"
+    - runtime-loop: "Optional loop sessions may be referenced from result state, but do not own it"
+
+files:
+  primary:
+    - workflow/templates/result-state-template.yaml
+    - workflow/templates/result-report-template.md
+    - workflow/templates/result-run-template.yaml
+    - workflow/templates/result-analysis-template.md
+  secondary:
+    - README.md
+    - CLAUDE.md
+    - docs/qc-mcp-integration.md
+    - AGENTS.md
+
+notes: |
+  Reference conventions:
+  - `refs.report` is repo-relative.
+  - `refs.spec` is repo-relative when a local spec exists, otherwise `null`.
+  - Artifact paths under `latest_*` and `run.yaml` are repo-relative.
+  - `refs.change` and `refs.runtime_session` are opaque workflow references, not file authorities.
+
+  Preferred read order:
+  1. spec.md
+  2. results/state.yaml
+  3. results/report.md
+  4. latest results/artifacts/runs/{run_id}/run.yaml
+  5. raw *.json only when needed
+
+  Preferred write order:
+  1. raw artifacts under results/artifacts/runs/{run_id}/
+  2. include compile raw evidence before any later-stage summary is recorded
+  3. run.yaml
+  4. results/state.yaml
+  5. results/report.md
+  6. workspace self-check
+
+  Status boundary:
+  - Result-layer persisted status uses only: `not_run`, `passed`, `failed`, `blocked`, `needs_iteration`.
+  - If backtest, optimization, or validation ran, `latest_compile` and `run.yaml.compile` must both be executed and must reference the same compile evidence.
+  - OpenSpec closure is expressed by verify + archive, not by result-layer status.
+  - Runtime loop completion is expressed separately through the optional session state.
